@@ -1,4 +1,4 @@
-# spotify-listening-history-analysis
+# Spotify Listening History Analysis
 ### **Overview** 
 This is a SQL analysis of my personal Spotify streaming history going back to 2018. I will be exploring my listening habits and trends.
 
@@ -72,7 +72,7 @@ ORDER BY TotalMinutes DESC;
 | 4 | Trouble | Cage The Elephant | 335 |
 | 5 | On Top | The Killers | 321 |
 
-Thinking back, this does make sense. I used to LOVE The Killers and Cage The Elephant when I was 16. I useed to overplay the same songs again and again at work. \
+Thinking back, this does make sense. I used to LOVE The Killers and Cage The Elephant when I was 16 and definetly overplay the same songs again and again at work. \
 \
 I do vaguely remember Breakfast At Tiffany's being one of the first songs I ever added to a playlist on Spotify. I believe at that time, I hadn't found the recommended songs algorithm and would just listen back to the same playlist over and over again. \
 \
@@ -95,7 +95,7 @@ ORDER BY TotalMinutes DESC;
 | 2 | Spirits | The Strumbellas | 78 |
 | 3 | Breakfast At Tiffany's | Deep Blue Something | 75 |
 
-I would describe these songs as belonging to the alternative/indie pop-rock genre. It was like dipping a toe into the alt music space with upbeat and catchy tracks that weren't particularly aggressive. 
+I would describe these songs as belonging to the alternative/indie pop-rock genre. It was dipping a toe into the alt music space with upbeat and catchy tracks that weren't particularly aggressive. 
 
 ### **My Top Songs in 2021**
 Let's skip forward a few years to 2021 and see if my music taste has diversified at all. At this time, I was around 19-20 years old and was working at a resturant/bar as a waitress while commuting to my local university. Times had indeed changed for me, so I'm sure my music taste had as well. \
@@ -116,7 +116,7 @@ ORDER BY TotalMinutes DESC;
 My music taste appears to have shifted to more progressive and heavier rock, while still staying in the alternative/grunge space. 90's music is one of my favorite eras of music, giving us so many hits from the likes of Nirvana, Sonic Youth and Hole, so I'm not surprised a Nirvana track made the list. Pink Floyd's music is timeless, so it's no wonder it was my top song this year. I also listened to a lot of Måneskin this year, right after the band blew up after winning the 2021 Eurovision Song Contest. I think it's also worth noting that my attachment to my favorite songs didn't seem to change much between 2018 and 2021. My top three songs accumulated almost exactly the same amount of listening time in both years. \
 
 ### **My Top Songs in 2025**
-We finally arrive at 2025, the latest full calendar year of my listening history at the time of this analysis. A few years have passed again, making me 23-24 years old this year. During this time, I completed my final year of university, and started my first full-time role. 
+We finally arrive at 2025, the latest full calendar year of my listening history at the time of this analysis. A few years have passed again, making me 23-24 years old here. During this time, I completed my final year of university, and started my first full-time role. 
 ```sql
 SELECT TOP 3 trackName, artistName, SUM(msPlayed) /60000 AS TotalMinutes FROM dbo.streaming_history_staging
 WHERE trackName IS NOT NULL AND timestamp LIKE '2025%'
@@ -129,8 +129,9 @@ ORDER BY TotalMinutes DESC;
 | 2 | King For A Day | Pierce The Veil | 133 |
 | 3 | Kids | Current Joys | 128 |
 
-Fast forward to 2025, it appears my music taste is leaning heavier into the alternative music scene reflecting my love for darker and more emotional music. But, it also looks like I'm still enjoying my fair share of melodic music with Current Joys. I spent 67% more listening time on these 3 top tracks compared to the previous years we looked at. I seem to have developed an even stronger attachment to certain songs. At first I believed that this may have been due to a increase of listening time overall with of my purchase of Spotify Premium Ad-free music this year.
-I constructed this query to test this theory, looking my total listening hours per year.
+Fast forward to 2025, it appears my music taste is leaning heavier into the alternative music scene reflecting my love for darker and more emotional music. But, it also looks like I'm still enjoying my fair share of melodic music with Current Joys. I spent 67% more listening time on these 3 top tracks compared to the previous years we looked at. I seem to have developed an even stronger attachment to certain songs. At first, I believed that this may have been due to a increase of overall listening time in 2025. \
+\
+I constructed this query to test this theory, looking my total listening hours year by year.
 ```sql
 SELECT YEAR(timestamp) AS Years, FORMAT(SUM(msPlayed) / 3600000.0, '0.##') AS TotalHours FROM dbo.streaming_history_staging
 GROUP BY YEAR(timestamp)
@@ -147,8 +148,45 @@ ORDER BY YEAR(timestamp)
 | 2023 | 183.48 |
 | 2024 | 274.16 |
 | 2025 | 103.33 |
-| 2026 | 59.64 |
 
-It actually appears that my listening hours decreased in 2025 compared to previous years.
+Surprisingly, the results didn't support my initial theory. Despite spending significantly more time replaying my top three songs in 2025, my overall listening time was only 103.33 hours, considerably lower than the previous year. In fact, 2024 had nearly three times as many listening hours.
+
+This suggests that my increased replay time for my top 3 favorite tracks in 2025 wasn't the result of listening to more music overall. Instead, I was spending a greater proportion of my listening time revisiting a smaller selection of favorite songs.
+
+
+### **How Often Did I Hit Skip?**
+
+After looking at my total listening hours each year, I wanted to get a better understanding of how my listening habits changed over time. Total listening hours alone don't tell the whole story. For example, spending more time listening to music doesn't necessarily mean I was listening to more individual tracks or letting songs play for longer.
+
+I expanded my query to calculate four metrics for each year: total listening hours, total streaming records, average playback time per record, and the percentage of records that ended with a forward-button press.
+
+I constructed this query using a CASE expression that lets me apply conditional logic. If the reason a track ended 'reasonEnd' was because of a Forward Skip 'fwdbtn', then these tracks are summed together and then grouped by each year.
+
+```sql
+SELECT YEAR(timestamp) AS Year, FORMAT(SUM(msPlayed) / 3600000.0, '0.##') AS TotalListeningHours, COUNT(timestamp) AS TotalStreams, FORMAT((SUM(msPlayed) /60000.0) / COUNT(timestamp),'0.##') AS AvgListeningMinutes,
+    FORMAT(
+        SUM(CASE WHEN reasonEnd = 'fwdbtn' THEN 1.0 ELSE 0 END)
+        / COUNT(*), '0.##%'
+    ) AS SkipPercentage FROM dbo.streaming_history_staging
+GROUP BY YEAR(timestamp)
+ORDER BY YEAR(timestamp)
+```
+
+**My Annual Forward-Skip Percentage**
+| Year | Total Listening Hours | Total Streams | Avg. Listening Minutes | Skip Percentage |
+|---:|---:|---:|---:|---:|
+| 2018 | 36.31 | 695 | 3.13 | 4.89% |
+| 2019 | 441.49 | 7,399 | 3.58 | 4.47% |
+| 2020 | 292.48 | 5,433 | 3.23 | 6.72% |
+| 2021 | 185.01 | 3,008 | 3.69 | 0.57% |
+| 2022 | 154.13 | 2,591 | 3.57 | 5.67% |
+| 2023 | 183.48 | 5,372 | 2.05 | 26.81% |
+| 2024 | 274.16 | 9,902 | 1.66 | 36.57% |
+| 2025 | 103.33 | 2,043 | 3.03 | 0.93% |
+
+
+
+
+
 
 
