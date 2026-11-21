@@ -2,14 +2,23 @@
 ### **Overview** 
 This is a SQL analysis of my personal Spotify streaming history going back to 2018. I will be exploring my listening habits and trends.
 
+## Table of Contents
+- [Overview](#overview)
+- [Tools Used](#tools-used)
+- [Data Discovery](#data-discovery)
+- [Data Cleaning And Formatting](#data-cleaning-and-formatting)
+- [Loading Data into MS SQL Server](#loading-data-into-ms-sql-server)
+- [Data Analysis](#data-analysis)
+- [Final Thoughts](#final-thoughts)
 
 ### **Tools Used:** 
 MS Excel \
-SQL Server Management Studio 22
+SQL Server Management Studio 22 \
+Power BI
 
 
 ### **Data Discovery** 
-Spotify is legally required to give you access to all your personal data they've collected. I went to the Spotify 'Privacy' page and then clicked 'Download Your Data'. A week or two later, I received an email from Spotify with my Extended Streaming History data files. I downloaded the ZIP files, and found the data files in JSON format broken up year by year. I converted the streaming_history_audio files from JSON format to CSV using Excel. \
+Spotify allows users to request a copy of their personal data through its Privacy page. I went to the Spotify Privacy page and selected 'Download Your Data'. A week or two later, I received an email from Spotify with my Extended Streaming History data files. I downloaded the ZIP files, and found the data files in JSON format broken up year by year. I converted the streaming_history_audio files from JSON format to CSV using Excel. \
 \
 In Excel, I followed these steps to import each JSON file to Excel:
 1. Get Data > From File > From JSON > Streaming_History_Audio_20XX
@@ -18,7 +27,7 @@ In Excel, I followed these steps to import each JSON file to Excel:
    Columns I will be using: ts, ms_played, master_metadata_track_name, master_metadata_artist_album_name, master_metadata_album_name, spotify_track_uri, reason_start, reason_end, shuffle, skipped, offline, offline_timestamp
 4. Close and Load to Table in existing worksheet
 
-### **Data Cleaning**
+### **Data Cleaning And Formatting**
 - Align all columns to the left
 - Autofit column width so all data is fully visible
 - Rename column headers to be easily understood
@@ -28,7 +37,7 @@ In Excel, I followed these steps to import each JSON file to Excel:
 All 9 JSON data files were combined to 1 Excel worksheet in CSV format called 'straming_history', with 12 columns and 37,712 rows after being cleaned. 
 \
 \
-**Load Data to MS SQL Server** 
+### **Loading Data into MS SQL Server** 
 1. Create a database called `SpotifyStreamingHistory`.
 2. Create a table called `streaming_history_staging` with 12 fields, assigning the correct data type to each field.
    ```sql
@@ -53,10 +62,10 @@ All 9 JSON data files were combined to 1 Excel worksheet in CSV format called 's
    SELECT * FROM dbo.streaming_history_staging;
    ```
 
-### **Analyze the Data** 
+### **Data Analysis** 
 This query sums up the top songs I've spent the most time listening to, sorting them in descending order. \
 \
-The `GROUP BY` clause groups rows with the same values (the track and artist names), so the aggregate function `SUM(msPlayed)` can be applied to each group seperately. 
+The `GROUP BY` clause groups rows with the same values (the track and artist names), so the aggregate function `SUM(msPlayed)` can be applied to each group separately. 
 ```sql
 SELECT TOP 5 trackName, artistName, SUM(msPlayed) /60000 AS TotalMinutes FROM dbo.streaming_history_staging
 WHERE trackName IS NOT NULL
@@ -72,7 +81,7 @@ ORDER BY TotalMinutes DESC;
 | 4 | Trouble | Cage The Elephant | 335 |
 | 5 | On Top | The Killers | 321 |
 
-Thinking back, this does make sense. I used to LOVE The Killers and Cage The Elephant when I was 16 and definetly overplay the same songs again and again at work. \
+Thinking back, this does make sense. I used to LOVE The Killers and Cage The Elephant when I was 16 and definitely overplay the same songs again and again at work. \
 \
 I do vaguely remember Breakfast At Tiffany's being one of the first songs I ever added to a playlist on Spotify. I believe at that time, I hadn't found the recommended songs algorithm and would just listen back to the same playlist over and over again. \
 \
@@ -98,7 +107,7 @@ ORDER BY TotalMinutes DESC;
 I would describe these songs as belonging to the alternative/indie pop-rock genre. It was dipping a toe into the alt music space with upbeat and catchy tracks that weren't particularly aggressive. 
 
 ### **My Top Songs in 2021**
-Let's skip forward a few years to 2021 and see if my music taste has diversified at all. At this time, I was around 19-20 years old and was working at a resturant/bar as a waitress while commuting to my local university. Times had indeed changed for me, so I'm sure my music taste had as well. \
+Let's skip forward a few years to 2021 and see if my music taste has diversified at all. At this time, I was around 19-20 years old and was working at a restaurant/bar as a waitress while commuting to my local university. Times had indeed changed for me, so I'm sure my music taste had as well. \
 \
 I'm using the same query as before, but with the LIKE operator with the `%` wildcard to include timestamps of songs I listened to only in 2021.
 ```sql
@@ -129,9 +138,9 @@ ORDER BY TotalMinutes DESC;
 | 2 | King For A Day | Pierce The Veil | 133 |
 | 3 | Kids | Current Joys | 128 |
 
-Fast forward to 2025, it appears my music taste is leaning heavier into the alternative music scene reflecting my love for darker and more emotional music. But, it also looks like I'm still enjoying my fair share of melodic music with Current Joys. I spent 67% more listening time on these 3 top tracks compared to the previous years we looked at. At first, I believed that this may have been due to a increase of overall listening time in 2025. \
+Fast forward to 2025, it appears my music taste is leaning heavier into the alternative music scene reflecting my love for darker and more emotional music. But, it also looks like I'm still enjoying my fair share of melodic music with Current Joys. I spent 67% more listening time on these 3 top tracks compared to the previous years we looked at. At first, I believed that this may have been due to an increase of overall listening time in 2025. \
 \
-I constructed this query to test this theory, looking my total listening hours year by year.
+I constructed this query to test this theory, looking at my total listening hours year by year.
 ```sql
 SELECT YEAR(timestamp) AS Years, FORMAT(SUM(msPlayed) / 3600000.0, '0.##') AS TotalHours FROM dbo.streaming_history_staging
 GROUP BY YEAR(timestamp)
@@ -191,7 +200,7 @@ Between 2023 and 2024, I seemed to experiment with music more frequently, potent
 Perhaps my relationship with music has become less about constantly finding something new and more about appreciating the songs I already know I love.
 
 ### **When Do I Listen to Music?**
-This query was a bit more complex. I used a CTE to organize the data and convert Spotify's UTC timestamps into my local Eastern Standard Time EST using `AT TIME ZONE`. I then used `DATEPART` to extract the hour from each timestamp and a `CASE` statement to categorize each listening record into five time periods: late night, overnight, morning, afternoon, and evening.
+This query was a bit more complex. I used a CTE to organize the data and convert Spotify's UTC timestamps into my local Eastern Time using `AT TIME ZONE`. I then used `DATEPART` to extract the hour from each timestamp and a `CASE` statement to categorize each listening record into five time periods: late night, overnight, morning, afternoon, and evening.
 
 Finally, I grouped the records by time of day and used `SUM` to calculate the total listening hours for each category. I also converted `msPlayed` to `BIGINT` before summing to prevent an arithmetic overflow, and used an `ORDER BY CASE` to display the results in chronological order.
 
@@ -244,8 +253,22 @@ ORDER BY
 | Afternoon (12:00 PM - 4:59 PM) | 618.58 |
 | Evening (5:00 PM - 10:59 PM) | 767.57 |
 
+
 The results show that most of my listening happens in the afternoon and evening. Together, these two periods account for approximately 80% of my total listening time. Evening is my most active listening period, with 767.57 hours, followed by the afternoon with 618.58 hours.
 
 My morning listening is considerably lower, at 179.27 hours. I found this result a little surprising. I expected my morning listening hours to be higher since I usually like to put on a song while I'm showering, but this habit must not be as consistent as I imagined. 
 
 An interesting takeaway is that I'm not necessarily the late-night listener I might have expected. My listening is much more concentrated between noon and 11 PM.
+
+Using Power BI to import my SQL query from MS SQL Server allowed me to visualize the data and identify trends more clearly. Looking at the last three years, I can see a gradual shift in my listening habits away from evening listening and toward morning and afternoon listening.
+
+![Listening Hours by Time of Day](TotalListeningHours&TimeOfDay.png)
+
+### **Final Thoughts**
+
+Looking back at my Spotify listening history, it's interesting to see how my relationship with music has evolved over the years. My music taste has shifted from alternative and indie pop-rock toward heavier and darker genres, while certain favorite songs have remained consistently important to me.
+
+My listening behavior has also changed. I went through periods of more frequent skipping and experimentation, followed by a return to revisiting familiar favorites. More recently, I've also noticed a gradual shift in when I listen to music, with afternoon and morning listening becoming more prominent relative to evening listening.
+
+This project gave me an opportunity to explore my personal listening history using SQL and Power BI, while discovering patterns I probably wouldn't have noticed otherwise. It was also a great way to practice querying, aggregating, cleaning, and visualizing real-world data.
+
