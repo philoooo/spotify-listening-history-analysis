@@ -122,10 +122,12 @@ ORDER BY TotalMinutes DESC;
 | 2 | Heart-Shaped Box | Nirvana | 79 |
 | 3 | CORALINE | Måneskin | 75 |
 
-My music taste appears to have shifted to more progressive and heavier rock, while still staying in the alternative/grunge space. 90's music is one of my favorite eras of music, giving us so many hits from the likes of Nirvana, Sonic Youth and Hole, so I'm not surprised a Nirvana track made the list. Pink Floyd's music is timeless, so it's no wonder it was my top song this year. I also listened to a lot of Måneskin this year, right after the band blew up after winning the 2021 Eurovision Song Contest. I think it's also worth noting that my attachment to my favorite songs didn't seem to change much between 2018 and 2021. My top three songs accumulated almost exactly the same amount of listening time in both years. 
+My music taste appears to have shifted to more progressive and heavier rock, while still staying in the alternative/grunge space. 90's music is one of my favorite eras of music, giving us so many hits from the likes of Nirvana, Sonic Youth and Hole, so I'm not surprised a Nirvana track made the list. Pink Floyd's music is timeless, so it's no wonder it was my top song this year.
+
+I also listened to a lot of Måneskin this year, right after the band blew up after winning the 2021 Eurovision Song Contest. I think it's also worth noting that my attachment to my favorite songs didn't seem to change much between 2018 and 2021. My top three songs accumulated almost exactly the same amount of listening time in both years. 
 
 ### **My Top Songs in 2025**
-We finally arrive at 2025, the latest full calendar year of my listening history at the time of this analysis. A few years have passed again, making me 23-24 years old here. During this time, I completed my final year of university, and started my first full-time role. 
+We finally arrive at 2025, the latest full calendar year of my listening history at the time of this analysis. A few years have passed again, making me 23-24 years old here. During this time, I completed my final year of university, and started my first full-time job. 
 ```sql
 SELECT TOP 3 trackName, artistName, SUM(msPlayed) /60000 AS TotalMinutes FROM dbo.streaming_history_staging
 WHERE trackName IS NOT NULL AND timestamp LIKE '2025%'
@@ -138,7 +140,7 @@ ORDER BY TotalMinutes DESC;
 | 2 | King For A Day | Pierce The Veil | 133 |
 | 3 | Kids | Current Joys | 128 |
 
-Fast forward to 2025, it appears my music taste is leaning heavier into the alternative music scene reflecting my love for darker and more emotional music. But, it also looks like I'm still enjoying my fair share of melodic music with Current Joys. I spent 67% more listening time on these 3 top tracks compared to the previous years we looked at. At first, I believed that this may have been due to an increase of overall listening time in 2025. \
+Fast forward to 2025, it appears my music taste is leaning further into the alternative music scene reflecting my love for darker and more emotional music. But, it also looks like I'm still enjoying my fair share of melodic music with Current Joys. I spent 67% more listening time on these 3 top tracks compared to the previous years we looked at. At first, I believed that this may have been due to an increase of overall listening time in 2025. \
 \
 I constructed this query to test this theory, looking at my total listening hours year by year.
 ```sql
@@ -260,7 +262,7 @@ My morning listening is considerably lower, at 179.27 hours. I found this result
 
 An interesting takeaway is that I'm not necessarily the late-night listener I might have expected. My listening is much more concentrated between noon and 11 PM.
 
-Using Power BI to import my SQL query from MS SQL Server allowed me to visualize the data and identify trends more clearly. Looking at the last three years, I can see a gradual shift in my listening habits away from evening listening and toward morning and afternoon listening.
+Using Power BI to import my SQL query from MS SQL Server allowed me to visualize the data and identify trends more clearly by comparing by data year to year. Looking at the last three years, I can see a gradual shift in my listening habits away from evening listening and toward morning and afternoon listening.
 
 ![Listening Hours by Time of Day](TotalListeningHours&TimeOfDay.png)
 
@@ -270,5 +272,6 @@ Looking back at my Spotify listening history, it's interesting to see how my rel
 
 My listening behavior has also changed. I went through periods of more frequent skipping and experimentation, followed by a return to revisiting familiar favorites. More recently, I've also noticed a gradual shift in when I listen to music, with afternoon and morning listening becoming more prominent relative to evening listening.
 
-This project gave me an opportunity to explore my personal listening history using SQL and Power BI, while discovering patterns I probably wouldn't have noticed otherwise. It was also a great way to practice querying, aggregating, cleaning, and visualizing real-world data.
+This project gave me an opportunity to explore my personal listening history using SQL and Power BI, while discovering patterns I wouldn't have noticed otherwise. It was also a great way to practice querying, aggregating, cleaning, and visualizing real-world data while learning more about myself!
 
+Thank you for reading!
